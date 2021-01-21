@@ -1,67 +1,62 @@
-import React, { useState } from "react";
+import React from "react";
 import * as S from "./Categories.styled";
 import { Flex } from "components";
 import { spendingCategories } from "../../mocks/spending-categories";
 import camelCase from "lodash.camelcase";
 import { FaWindowClose } from "react-icons/fa";
+import {
+  useGlobalState,
+  useGlobalDispatch,
+} from "context/GlobalContextProvider";
 
 const Categories = () => {
-  const [categories, setCategories] = useState({
-    flights: false,
-    hotels: false,
-    rideShare: false,
-    rentalCar: false,
-    cruises: false,
-    travelAgencies: false,
-    restaurants: false,
-    foodDeliveryServices: false,
-    groceryStores: false,
-    drugstores: false,
-    entertainment: false,
-    gasStations: false,
-    streamingServices: false,
-  });
-
-  console.log(categories);
+  const state = useGlobalState();
+  const dispatch = useGlobalDispatch();
 
   const handleCheckBox = (e) => {
-    const categoriesCopy = { ...categories };
+    const categoriesCopy = { ...state?.categories };
     categoriesCopy[e?.target?.name] = e?.target?.checked;
-    setCategories(categoriesCopy);
+    dispatch({
+      type: "SET_CATEGORIES",
+      payload: categoriesCopy,
+    });
   };
 
   const handleRemove = (category) => {
-    const categoriesCopy = { ...categories };
+    const categoriesCopy = { ...state?.categories };
     categoriesCopy[category] = false;
-    setCategories(categoriesCopy);
+    dispatch({
+      type: "SET_CATEGORIES",
+      payload: categoriesCopy,
+    });
   };
 
   return (
     <S.Wrapper>
-      <Flex wrap justify="flex-start" margin="0 0 32px 0">
-        {spendingCategories.map(({ category, icon }) => {
-          if (categories[camelCase(category)] === true)
-            return (
-              <S.CategoryIcon>
+      <Flex wrap="true" justify="flex-start" margin="0 0 32px 0">
+        {spendingCategories.map(
+          ({ category, icon }) =>
+            state?.categories[camelCase(category)] === true && (
+              <S.CategoryIcon key={category}>
                 {icon()}
                 <S.Remove onClick={() => handleRemove(camelCase(category))}>
                   <FaWindowClose />
                 </S.Remove>
               </S.CategoryIcon>
-            );
-        })}
+            )
+        )}
       </Flex>
       {spendingCategories.map(({ category, icon }) => (
-        <Flex key={category}>
-          <Flex justify="flex-start" margin="0 0 16px 0">
+        <Flex key={category} margin="0 0 16px 0">
+          <Flex justify="center">
             {icon()}
             <p>{category}</p>
           </Flex>
           <input
             type="checkbox"
-            checked={categories[camelCase(category)]}
+            checked={state?.categories[camelCase(category)]}
             name={camelCase(category)}
-            onClick={handleCheckBox}
+            onChange={handleCheckBox}
           />
         </Flex>
       ))}

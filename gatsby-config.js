@@ -21,6 +21,7 @@ module.exports = {
         images: path.join(__dirname, "src/images"),
         components: path.join(__dirname, "src/components"),
         utils: path.join(__dirname, "src/utils"),
+        context: path.join(__dirname, "src/context"),
       },
     },
     "gatsby-plugin-styled-components",
