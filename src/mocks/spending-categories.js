@@ -1,0 +1,30 @@
+import {
+  FaPlane,
+  FaHotel,
+  FaCarAlt,
+  FaCarSide,
+  FaShip,
+  FaSuitcaseRolling,
+  FaUtensils,
+  FaShippingFast,
+  FaShoppingCart,
+  FaPills,
+  FaTv,
+  FaGasPump,
+} from "react-icons/fa";
+
+export const spendingCategories = [
+  { category: "Flights", icon: FaPlane },
+  { category: "Hotels", icon: FaHotel },
+  { category: "Ride Share", icon: FaCarAlt },
+  { category: "Rental Car", icon: FaCarSide },
+  { category: "Cruises", icon: FaShip },
+  { category: "Travel Agencies", icon: FaSuitcaseRolling },
+  { category: "Restaurants", icon: FaUtensils },
+  { category: "Food Delivery Services", icon: FaShippingFast },
+  { category: "Grocery Stores", icon: FaShoppingCart },
+  { category: "Drugstores", icon: FaPills },
+  { category: "Entertainment", icon: FaTv },
+  { category: "Gas Stations", icon: FaGasPump },
+  { category: "Streaming Services", icon: FaTv },
+];

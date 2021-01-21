@@ -1,11 +1,13 @@
 import * as React from "react";
-import { Header } from "components";
+import { Header, Categories } from "components";
 
 const IndexPage = () => {
   return (
     <>
       <Header />
-      <main></main>
+      <main>
+        <Categories />
+      </main>
     </>
   );
 };
