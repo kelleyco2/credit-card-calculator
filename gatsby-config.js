@@ -4,7 +4,10 @@ const path = require("path");
 
 module.exports = {
   siteMetadata: {
-    title: "credit-card-calculator",
+    title: `Credit Card`,
+    description: ``,
+    author: `Cooper Kelley`,
+    siteUrl: `https://creditcardeval.com/`,
   },
   plugins: [
     {
