@@ -1,0 +1,15 @@
+export const chaseSapphireReserve = {
+  flights: 0.03,
+  hotels: 0.03,
+  rideShare: 0.03,
+  rentalCar: 0.03,
+  cruises: 0.03,
+  travelAgencies: 0.03,
+  restaurants: 0.03,
+  foodDeliveryServices: 0.03,
+  groceryStores: 0.01,
+  drugstores: 0.01,
+  entertainment: 0.01,
+  gasStations: 0.01,
+  streamingServices: 0.01,
+};

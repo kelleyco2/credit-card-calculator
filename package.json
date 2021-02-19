@@ -28,9 +28,11 @@
     "gatsby-source-filesystem": "^2.9.1",
     "gatsby-transformer-sharp": "^2.10.1",
     "lodash.camelcase": "^4.3.0",
+    "lodash.startcase": "^4.4.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-helmet": "^6.1.0",
+    "react-hook-form": "^6.15.1",
     "react-icons": "^4.1.0",
     "styled-components": "^5.2.1"
   }

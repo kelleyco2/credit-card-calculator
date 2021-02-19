@@ -1,9 +1,11 @@
 import React from "react";
+
+import camelCase from "lodash.camelcase";
+import { FaWindowClose } from "react-icons/fa";
+
 import * as S from "./Categories.styled";
 import { Flex } from "components";
 import { spendingCategories } from "../../mocks/spending-categories";
-import camelCase from "lodash.camelcase";
-import { FaWindowClose } from "react-icons/fa";
 import {
   useGlobalState,
   useGlobalDispatch,
@@ -60,6 +62,18 @@ const Categories = () => {
           />
         </Flex>
       ))}
+      <Flex width="100%" justify="flex-end">
+        <button
+          onClick={() =>
+            dispatch({
+              type: "SET_STEPS",
+              payload: [false, true, false],
+            })
+          }
+        >
+          Next
+        </button>
+      </Flex>
     </S.Wrapper>
   );
 };
