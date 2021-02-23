@@ -11,9 +11,9 @@ import {
 } from "context/GlobalContextProvider";
 
 const IndexPage = ({ data }) => {
-  const { handleSubmit, control } = useForm();
+  const { handleSubmit, control, register } = useForm();
   const state = useGlobalState();
-  console.log("GLOBAL STATE: ", state);
+  // console.log("GLOBAL STATE: ", state);
   const dispatch = useGlobalDispatch();
   const {
     allContentfulCreditCard: { edges },
@@ -21,10 +21,9 @@ const IndexPage = ({ data }) => {
 
   // console.log("EDGES: ", edges);
 
-  const [customMultiplier, setCustomMultiplier] = useState(null);
-
   const formula = useCallback(
-    (spendingCategories, combo) => {
+    (spendingCategories, combo, customMultiplier) => {
+      // console.log("customMultiplier", customMultiplier);
       let finalArray;
       const edgesCopy = [...edges];
       const filteredEdges = edgesCopy.filter(
@@ -36,7 +35,6 @@ const IndexPage = ({ data }) => {
         finalArray = filteredEdges;
       }
       // console.log(finalArray);
-      let cardName = "";
       let totals = [];
       let multiplier = 0;
       finalArray.map(({ node }, i) => {
@@ -55,11 +53,12 @@ const IndexPage = ({ data }) => {
         } else {
           multiplier = 1;
         }
-        // console.log(`${node?.cardName} multiplier`, multiplier);
+        // console.log("multiplier", multiplier);
         const keys = Object.keys(spendingCategories);
         const total = keys.map((key) => {
           let total = 0;
           total += parseInt(spendingCategories[key]) * node[key];
+          // console.log("multiplier", multiplier);
           total *= multiplier;
           return total;
         });
@@ -69,63 +68,37 @@ const IndexPage = ({ data }) => {
         );
       });
 
-      console.log("totals", totals);
+      // console.log("totals", totals);
 
-      const max = totals.reduce((a, b) => {
-        return Math.max(a, b);
+      const newTotals = totals.map((value, i) => {
+        return {
+          value,
+          cardName: finalArray[i]?.node?.cardName,
+        };
       });
 
-      const secondMax = (arr) => {
-        const arrCopy = [...arr];
-        arrCopy.splice(arr.indexOf(max), 1);
-        const secondMax = arrCopy.reduce((a, b) => {
-          return Math.max(a, b);
-        });
-        const secondMaxIndex = totals.indexOf(secondMax);
-        return {
-          max: secondMax,
-          cardName: finalArray[secondMaxIndex]?.node.cardName,
-        };
-      };
-
-      const thirdMax = (arr) => {
-        const arrCopy = [...arr];
-        arrCopy.splice(arrCopy.indexOf(max), 1);
-        const secondMax = arrCopy.reduce((a, b) => {
-          return Math.max(a, b);
-        });
-        arrCopy.splice(arrCopy.indexOf(secondMax), 1);
-        const thirdMax = arrCopy.reduce((a, b) => {
-          return Math.max(a, b);
-        });
-        const thirdMaxIndex = totals.indexOf(thirdMax);
-        return {
-          max: thirdMax,
-          cardName: finalArray[thirdMaxIndex]?.node?.cardName,
-        };
-      };
-
-      const secondPlace = secondMax(totals);
-      const thirdPlace = thirdMax(totals);
-
-      const cardIndex = totals.indexOf(max);
-      cardName = finalArray[cardIndex]?.node?.cardName;
-
-      const winner = {
-        max,
-        cardName,
-      };
+      newTotals.sort((a, b) => b?.value - a?.value);
+      const topThree = newTotals.slice(0, 3);
 
       dispatch({
         type: "SET_WINNERS",
-        payload: [winner, secondPlace, thirdPlace],
+        payload: topThree,
       });
     },
     [edges, dispatch]
   );
 
   const submit = (categories) => {
+    console.log(categories);
     formula(categories, false);
+    const totalSpending = Object.keys(categories).reduce(
+      (sum, key) => sum + parseFloat(categories[key] || 0),
+      0
+    );
+    dispatch({
+      type: "SET_TOTAL_SPENDING",
+      payload: totalSpending,
+    });
     dispatch({
       type: "SET_CATEGORY_VALUES",
       payload: categories,
@@ -134,6 +107,10 @@ const IndexPage = ({ data }) => {
       type: "SET_STEPS",
       payload: [false, false, true],
     });
+  };
+
+  const reCalc = ({ multiplier }) => {
+    formula(state?.categoryValues, false, parseInt(multiplier));
   };
 
   return (
@@ -154,26 +131,48 @@ const IndexPage = ({ data }) => {
             >
               {Object.keys(state?.categories)
                 .filter((key) => state?.categories?.[key] === true)
-                .map((category) => (
-                  <React.Fragment key={category}>
-                    <label htmlFor={category}>{startCase(category)}</label>
-                    <Controller
-                      name={category}
-                      control={control}
-                      defaultValue={state?.categoryValues?.[category]}
-                      render={({ onChange, value }) => (
-                        <input
-                          value={value}
-                          onChange={(e) => onChange(e.target.value)}
+                .map(
+                  (category) =>
+                    category !== "other" && (
+                      <React.Fragment key={category}>
+                        <label htmlFor={category}>{startCase(category)}</label>
+                        <Controller
+                          name={category}
+                          control={control}
+                          defaultValue={state?.categoryValues?.[category]}
+                          render={({ onChange, value }) => (
+                            <input
+                              value={value}
+                              onChange={(e) => onChange(e.target.value)}
+                            />
+                          )}
                         />
-                      )}
+                      </React.Fragment>
+                    )
+                )}
+              <React.Fragment key={"other"}>
+                <label htmlFor={"other"}>{startCase("other")}</label>
+                <Controller
+                  name={"other"}
+                  control={control}
+                  defaultValue={state?.categoryValues?.["other"]}
+                  render={({ onChange, value }) => (
+                    <input
+                      value={value}
+                      onChange={(e) => onChange(e.target.value)}
                     />
-                  </React.Fragment>
-                ))}
+                  )}
+                />
+              </React.Fragment>
               {/* TODO */}
               {/* <h1>{`Total Annual Spending: ${}`}</h1> */}
             </div>
-            <Flex width="700px" justify="space-between" margin="16px auto 0">
+            <Flex
+              width="100%"
+              maxWidth="700px"
+              justify="space-between"
+              margin="16px auto 0"
+            >
               <button
                 onClick={() =>
                   dispatch({
@@ -189,14 +188,20 @@ const IndexPage = ({ data }) => {
           </form>
         )}
         {state?.steps?.[2] && (
-          <Flex width="fit-content" column margin="0 auto">
-            {/* <h1>{`Winner: ${winner?.cardName} $${winner?.max}`}</h1> */}
+          <Flex width="100%" column margin="0 auto">
+            <h1>{`Total Spending: $${state?.totalSpending}`}</h1>
             {state?.winners?.map((winner, i) => (
               <h1 key={i}>{`${
                 i === 0 ? "Winner" : i === 1 ? "2nd Place" : "3rd Place"
-              }: ${winner?.cardName} $${winner?.max}`}</h1>
+              }: ${winner?.cardName} $${winner?.value}`}</h1>
             ))}
-            <Flex justify="space-between" width="700px" margin="0 0 20px 0">
+            <Flex
+              justify="space-between"
+              width="100%"
+              maxWidth="700px"
+              margin="0 0 20px 0"
+              wrap
+            >
               <button
                 onClick={() =>
                   dispatch({ type: "SET_STEPS", payload: [false, true, false] })
@@ -215,16 +220,11 @@ const IndexPage = ({ data }) => {
               </button>
             </Flex>
             <Flex>
-              <label htmlFor="multiplier">Current Multiplier: </label>
-              <input
-                type="number"
-                name="multiplier"
-                value={customMultiplier}
-                onChange={(e) => setCustomMultiplier(e?.target?.value)}
-              />
-              <button onClick={() => formula(state?.categoryValues, false)}>
-                Re-calculate
-              </button>
+              <form onSubmit={handleSubmit(reCalc)}>
+                <label htmlFor="multiplier">Custom Multiplier: </label>
+                <input type="number" name="multiplier" ref={register()} />
+                <button type="submit">Re-calculate</button>
+              </form>
             </Flex>
           </Flex>
         )}

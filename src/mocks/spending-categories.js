@@ -10,13 +10,11 @@ import {
   FaGasPump,
   FaShoppingBag,
   FaPizzaSlice,
-  FaRegCreditCard,
 } from "react-icons/fa";
 
 export const spendingCategories = [
   { category: "Shopping", icon: FaShoppingBag },
   { category: "Food & Drink", icon: FaPizzaSlice },
-  { category: "Other", icon: FaRegCreditCard },
   { category: "Gas", icon: FaGasPump },
   { category: "Groceries", icon: FaShoppingCart },
   { category: "Entertainment", icon: FaTv },

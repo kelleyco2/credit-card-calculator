@@ -16,6 +16,9 @@ const existingCategories = JSON.parse(
 const existingCategoryValues = JSON.parse(
   !isSSR && sessionStorage.getItem("categoryValues")
 );
+const existingTotalSpending = JSON.parse(
+  !isSSR && sessionStorage.getItem("totalSpending")
+);
 
 const initialState = {
   steps: existingSteps || [true, false, false],
@@ -23,7 +26,7 @@ const initialState = {
   categories: existingCategories || {
     shopping: false,
     foodDrink: false,
-    other: false,
+    other: true,
     gas: false,
     groceries: false,
     entertainment: false,
@@ -48,6 +51,7 @@ const initialState = {
     otherTravel: 0,
     drugstores: 0,
   },
+  totalSpending: existingTotalSpending || 0,
 };
 
 const reducer = (state, action) => {
@@ -79,6 +83,17 @@ const reducer = (state, action) => {
         steps: action?.payload,
       };
     }
+    case "SET_TOTAL_SPENDING": {
+      !isSSR &&
+        sessionStorage.setItem(
+          "totalSpending",
+          JSON.stringify(action?.payload)
+        );
+      return {
+        ...state,
+        totalSpending: action?.payload,
+      };
+    }
     case "SET_WINNERS": {
       !isSSR &&
         sessionStorage.setItem("winners", JSON.stringify(action?.payload));
@@ -95,7 +110,7 @@ const reducer = (state, action) => {
         categories: {
           shopping: false,
           foodDrink: false,
-          other: false,
+          other: true,
           gas: false,
           groceries: false,
           entertainment: false,
