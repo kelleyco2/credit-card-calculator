@@ -22,7 +22,7 @@ const IndexPage = ({ data }) => {
   // console.log("EDGES: ", edges);
 
   const formula = useCallback(
-    (spendingCategories, combo, customMultiplier) => {
+    (spendingCategories, combo, multipliers) => {
       // console.log("customMultiplier", customMultiplier);
       let finalArray;
       const edgesCopy = [...edges];
@@ -39,19 +39,29 @@ const IndexPage = ({ data }) => {
       let multiplier = 0;
       finalArray.map(({ node }, i) => {
         // console.log(`${node?.cardName}: ${i}`);
-        if (customMultiplier) {
-          multiplier = customMultiplier;
-        } else if (
-          node?.cardName === "Chase Sapphire Reserve" ||
-          node?.cardName ===
-            "Chase Sapphire Reserve + Chase Freedom Unlimited" ||
-          node?.cardName.includes("Amex")
-        ) {
-          multiplier = 1.5;
-        } else if (node?.cardName === "Chase Sapphire Preferred") {
-          multiplier = 1.25;
+        if (multipliers) {
+          if (node?.cardName.includes("Amex")) {
+            multiplier = parseInt(multipliers?.amexMultiplier);
+          } else if (node?.cardName.includes("Chase")) {
+            multiplier = parseInt(multipliers?.chaseMulitplier);
+          } else if (node?.cardName.includes("Citi")) {
+            multiplier = parseInt(multipliers?.citiMultiplier);
+          } else {
+            multiplier = 1;
+          }
         } else {
-          multiplier = 1;
+          if (
+            node?.cardName === "Chase Sapphire Reserve" ||
+            node?.cardName ===
+              "Chase Sapphire Reserve + Chase Freedom Unlimited" ||
+            node?.cardName.includes("Amex")
+          ) {
+            multiplier = 1.5;
+          } else if (node?.cardName === "Chase Sapphire Preferred") {
+            multiplier = 1.25;
+          } else {
+            multiplier = 1;
+          }
         }
         // console.log("multiplier", multiplier);
         const keys = Object.keys(spendingCategories);
@@ -109,8 +119,9 @@ const IndexPage = ({ data }) => {
     });
   };
 
-  const reCalc = ({ multiplier }) => {
-    formula(state?.categoryValues, false, parseInt(multiplier));
+  const reCalc = (multipliers) => {
+    // console.log(multipliers);
+    formula(state?.categoryValues, false, multipliers);
   };
 
   return (
@@ -221,9 +232,22 @@ const IndexPage = ({ data }) => {
             </Flex>
             <Flex>
               <form onSubmit={handleSubmit(reCalc)}>
-                <label htmlFor="multiplier">Custom Multiplier: </label>
-                <input type="number" name="multiplier" ref={register()} />
-                <button type="submit">Re-calculate</button>
+                <Flex column width="100%">
+                  {["amexMultiplier", "chaseMulitplier", "citiMultiplier"].map(
+                    (company) => (
+                      <Flex width="100%" margin="0 0 16px 0" kyey={company}>
+                        <label htmlFor={company}>{startCase(company)}: </label>
+                        <input
+                          type="number"
+                          name={company}
+                          ref={register()}
+                          step="0.1"
+                        />
+                      </Flex>
+                    )
+                  )}
+                  <button type="submit">Re-calculate</button>
+                </Flex>
               </form>
             </Flex>
           </Flex>
