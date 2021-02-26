@@ -62,18 +62,6 @@ const Categories = () => {
           />
         </Flex>
       ))}
-      <Flex width="100%" justify="flex-end">
-        <button
-          onClick={() =>
-            dispatch({
-              type: "SET_STEPS",
-              payload: [false, true, false],
-            })
-          }
-        >
-          Next
-        </button>
-      </Flex>
     </S.Wrapper>
   );
 };

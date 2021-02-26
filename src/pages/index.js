@@ -1,10 +1,10 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback } from "react";
 
 import { graphql } from "gatsby";
 import startCase from "lodash.startcase";
 import { useForm, Controller } from "react-hook-form";
 
-import { Header, Categories, Flex } from "components";
+import { Header, Categories, Flex, CardInfo } from "components";
 import {
   useGlobalState,
   useGlobalDispatch,
@@ -81,9 +81,10 @@ const IndexPage = ({ data }) => {
       // console.log("totals", totals);
 
       const newTotals = totals.map((value, i) => {
+        console.log(finalArray[i]?.node);
         return {
           value,
-          cardName: finalArray[i]?.node?.cardName,
+          ...finalArray[i]?.node,
         };
       });
 
@@ -97,6 +98,8 @@ const IndexPage = ({ data }) => {
     },
     [edges, dispatch]
   );
+
+  console.log(state?.winners);
 
   const submit = (categories) => {
     console.log(categories);
@@ -175,25 +178,13 @@ const IndexPage = ({ data }) => {
                   )}
                 />
               </React.Fragment>
-              {/* TODO */}
-              {/* <h1>{`Total Annual Spending: ${}`}</h1> */}
             </div>
             <Flex
               width="100%"
               maxWidth="700px"
-              justify="space-between"
+              justify="flex-end"
               margin="16px auto 0"
             >
-              <button
-                onClick={() =>
-                  dispatch({
-                    type: "SET_STEPS",
-                    payload: [true, false, false],
-                  })
-                }
-              >
-                Previous
-              </button>
               <button type="submit">Show Results</button>
             </Flex>
           </form>
@@ -202,20 +193,18 @@ const IndexPage = ({ data }) => {
           <Flex width="100%" column margin="0 auto">
             <h1>{`Total Spending: $${state?.totalSpending}`}</h1>
             {state?.winners?.map((winner, i) => (
-              <h1 key={i}>{`${
-                i === 0 ? "Winner" : i === 1 ? "2nd Place" : "3rd Place"
-              }: ${winner?.cardName} $${winner?.value}`}</h1>
+              <CardInfo winner={winner} place={i} />
             ))}
             <Flex
               justify="space-between"
               width="100%"
               maxWidth="700px"
               margin="0 0 20px 0"
-              wrap
+              wrap={"true"}
             >
               <button
                 onClick={() =>
-                  dispatch({ type: "SET_STEPS", payload: [false, true, false] })
+                  dispatch({ type: "SET_STEPS", payload: [true, true, false] })
                 }
               >
                 Previous
@@ -235,7 +224,7 @@ const IndexPage = ({ data }) => {
                 <Flex column width="100%">
                   {["amexMultiplier", "chaseMulitplier", "citiMultiplier"].map(
                     (company) => (
-                      <Flex width="100%" margin="0 0 16px 0" kyey={company}>
+                      <Flex width="100%" margin="0 0 16px 0" key={company}>
                         <label htmlFor={company}>{startCase(company)}: </label>
                         <input
                           type="number"
@@ -279,6 +268,7 @@ export const query = graphql`
           rentalCar
           otherTravel
           drugstores
+          currentSignUpPromotion
         }
       }
     }

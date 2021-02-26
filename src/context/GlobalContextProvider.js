@@ -21,7 +21,7 @@ const existingTotalSpending = JSON.parse(
 );
 
 const initialState = {
-  steps: existingSteps || [true, false, false],
+  steps: existingSteps || [true, true, false],
   winners: existingWinners || [],
   categories: existingCategories || {
     shopping: false,
@@ -105,7 +105,7 @@ const reducer = (state, action) => {
     case "RESET": {
       !isSSR && sessionStorage.clear();
       return {
-        steps: [true, false, false],
+        steps: [true, true, false],
         winners: [],
         categories: {
           shopping: false,
