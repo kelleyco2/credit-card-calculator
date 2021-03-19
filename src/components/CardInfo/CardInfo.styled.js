@@ -17,7 +17,8 @@ export const Wrapper = styled.div`
   }
 
   h1,
-  h2 {
+  h2,
+  p {
     margin: 0;
   }
 
@@ -25,9 +26,15 @@ export const Wrapper = styled.div`
     background: green;
   }
   meter[value="2"]::-webkit-meter-optimum-value {
-    background: orange;
+    background: yellow;
   }
   meter[value="3"]::-webkit-meter-optimum-value {
+    background: orange;
+  }
+  meter[value="4"]::-webkit-meter-optimum-value {
+    background: orangered;
+  }
+  meter[value="5"]::-webkit-meter-optimum-value {
     background: red;
   }
 `;

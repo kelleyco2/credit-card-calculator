@@ -11,7 +11,9 @@ import {
 } from "context/GlobalContextProvider";
 
 const IndexPage = ({ data }) => {
-  const { handleSubmit, control, register } = useForm();
+  const { handleSubmit, control, register, watch } = useForm();
+  const allFields = watch();
+  // console.log("allFields", allFields);
   const state = useGlobalState();
   // console.log("GLOBAL STATE: ", state);
   const dispatch = useGlobalDispatch();
@@ -23,7 +25,7 @@ const IndexPage = ({ data }) => {
 
   const formula = useCallback(
     (spendingCategories, combo, multipliers) => {
-      // console.log("customMultiplier", customMultiplier);
+      console.log("customMultiplier", multipliers);
       let finalArray;
       const edgesCopy = [...edges];
       const filteredEdges = edgesCopy.filter(
@@ -40,34 +42,30 @@ const IndexPage = ({ data }) => {
       finalArray.map(({ node }, i) => {
         // console.log(`${node?.cardName}: ${i}`);
         if (multipliers) {
-          if (node?.cardName.includes("Amex")) {
-            multiplier = parseInt(multipliers?.amexMultiplier);
-          } else if (node?.cardName.includes("Chase")) {
-            multiplier = parseInt(multipliers?.chaseMulitplier);
-          } else if (node?.cardName.includes("Citi")) {
-            multiplier = parseInt(multipliers?.citiMultiplier);
+          if (node?.cardName.includes("Amex") && node?.cashBack === false) {
+            multiplier = parseInt(multipliers?.amex);
+          } else if (
+            node?.cardName.includes("Chase") &&
+            node?.cashBack === false
+          ) {
+            multiplier = parseInt(multipliers?.chase);
+          } else if (
+            node?.cardName.includes("Citi") &&
+            node?.cashBack === false
+          ) {
+            multiplier = parseInt(multipliers?.citi);
           } else {
             multiplier = 1;
           }
         } else {
-          if (
-            node?.cardName === "Chase Sapphire Reserve" ||
-            node?.cardName ===
-              "Chase Sapphire Reserve + Chase Freedom Unlimited" ||
-            node?.cardName.includes("Amex")
-          ) {
-            multiplier = 1.5;
-          } else if (node?.cardName === "Chase Sapphire Preferred") {
-            multiplier = 1.25;
-          } else {
-            multiplier = 1;
-          }
+          multiplier = node?.multiplier;
         }
-        // console.log("multiplier", multiplier);
+
+        console.log("multiplier", `${node?.cardName}: ${multiplier}`);
         const keys = Object.keys(spendingCategories);
         const total = keys.map((key) => {
           let total = 0;
-          total += parseInt(spendingCategories[key]) * node[key];
+          total += spendingCategories[key] * node[key];
           // console.log("multiplier", multiplier);
           total *= multiplier;
           return total;
@@ -81,7 +79,7 @@ const IndexPage = ({ data }) => {
       // console.log("totals", totals);
 
       const newTotals = totals.map((value, i) => {
-        console.log(finalArray[i]?.node);
+        // console.log(finalArray[i]?.node);
         return {
           value,
           ...finalArray[i]?.node,
@@ -99,28 +97,71 @@ const IndexPage = ({ data }) => {
     [edges, dispatch]
   );
 
-  console.log(state?.winners);
+  // console.log(state?.winners);
 
-  const submit = (categories) => {
-    console.log(categories);
-    formula(categories, false);
-    const totalSpending = Object.keys(categories).reduce(
-      (sum, key) => sum + parseFloat(categories[key] || 0),
-      0
-    );
-    dispatch({
-      type: "SET_TOTAL_SPENDING",
-      payload: totalSpending,
-    });
-    dispatch({
-      type: "SET_CATEGORY_VALUES",
-      payload: categories,
-    });
-    dispatch({
-      type: "SET_STEPS",
-      payload: [false, false, true],
-    });
-  };
+  const submit = useCallback(
+    ({
+      drugstores = 0,
+      drugstores_time = 1,
+      entertainment = 0,
+      entertainment_time = 1,
+      flights = 0,
+      flights_time = 1,
+      foodDrink = 0,
+      foodDrink_time = 1,
+      gas = 0,
+      gas_time = 1,
+      groceries = 0,
+      groceries_time = 1,
+      hotels = 0,
+      hotels_time = 1,
+      other = 0,
+      other_time = 1,
+      otherTravel = 0,
+      otherTravel_time = 1,
+      rentalCar = 0,
+      rentalCar_time = 1,
+      shopping = 0,
+      shopping_time = 1,
+      transit = 0,
+      transit_time = 1,
+    }) => {
+      console.log(drugstores, drugstores_time);
+      const newCategories = {
+        drugstores: parseInt(drugstores) * parseInt(drugstores_time),
+        entertainment: parseInt(entertainment) * parseInt(entertainment_time),
+        flights: parseInt(flights) * parseInt(flights_time),
+        foodDrink: parseInt(foodDrink) * parseInt(foodDrink_time),
+        gas: parseInt(gas) * parseInt(gas_time),
+        groceries: parseInt(groceries) * parseInt(groceries_time),
+        hotels: parseInt(hotels) * parseInt(hotels_time),
+        other: parseInt(other) * parseInt(other_time),
+        otherTravel: parseInt(otherTravel) * parseInt(otherTravel_time),
+        rentalCar: parseInt(rentalCar) * parseInt(rentalCar_time),
+        shopping: parseInt(shopping) * parseInt(shopping_time),
+        transit: parseInt(transit) * parseInt(transit_time),
+      };
+      console.log("newCategories", newCategories);
+      formula(newCategories, false);
+      const totalSpending = Object.keys(newCategories).reduce(
+        (sum, key) => sum + parseFloat(newCategories[key] || 0),
+        0
+      );
+      dispatch({
+        type: "SET_TOTAL_SPENDING",
+        payload: totalSpending,
+      });
+      dispatch({
+        type: "SET_CATEGORY_VALUES",
+        payload: newCategories,
+      });
+      dispatch({
+        type: "SET_STEPS",
+        payload: [false, false, true],
+      });
+    },
+    [dispatch, formula]
+  );
 
   const reCalc = (multipliers) => {
     // console.log(multipliers);
@@ -148,36 +189,66 @@ const IndexPage = ({ data }) => {
                 .map(
                   (category) =>
                     category !== "other" && (
-                      <React.Fragment key={category}>
-                        <label htmlFor={category}>{startCase(category)}</label>
-                        <Controller
-                          name={category}
-                          control={control}
-                          defaultValue={state?.categoryValues?.[category]}
-                          render={({ onChange, value }) => (
-                            <input
-                              value={value}
-                              onChange={(e) => onChange(e.target.value)}
-                            />
-                          )}
-                        />
-                      </React.Fragment>
+                      <Flex justify="flex-start" margin="16px 0 0 0">
+                        <React.Fragment key={category}>
+                          <label
+                            htmlFor={category}
+                            style={{
+                              marginRight: "16px",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            {startCase(category)}
+                          </label>
+                          <Controller
+                            name={category}
+                            control={control}
+                            defaultValue={state?.categoryValues?.[category]}
+                            render={({ onChange, value }) => (
+                              <input
+                                value={value}
+                                onChange={(e) => onChange(e.target.value)}
+                                style={{ marginRight: "16px", width: "100%" }}
+                              />
+                            )}
+                          />
+                        </React.Fragment>
+                        <select name={`${category}_time`} ref={register()}>
+                          <option value={52}>Weekly</option>
+                          <option value={12}>Monthly</option>
+                          <option value={1} selected>
+                            Yearly
+                          </option>
+                        </select>
+                      </Flex>
                     )
                 )}
-              <React.Fragment key={"other"}>
-                <label htmlFor={"other"}>{startCase("other")}</label>
-                <Controller
-                  name={"other"}
-                  control={control}
-                  defaultValue={state?.categoryValues?.["other"]}
-                  render={({ onChange, value }) => (
-                    <input
-                      value={value}
-                      onChange={(e) => onChange(e.target.value)}
-                    />
-                  )}
-                />
-              </React.Fragment>
+              <Flex justify="flex-start" margin="16px 0 0 0">
+                <>
+                  <label htmlFor={"other"} style={{ marginRight: "16px" }}>
+                    {startCase("other")}
+                  </label>
+                  <Controller
+                    name={"other_time"}
+                    control={control}
+                    defaultValue={state?.categoryValues?.["other"]}
+                    render={({ onChange, value }) => (
+                      <input
+                        value={value}
+                        onChange={(e) => onChange(e.target.value)}
+                        style={{ marginRight: "16px", width: "100%" }}
+                      />
+                    )}
+                  />
+                </>
+                <select name={"other"} ref={register()}>
+                  <option value={52}>Weekly</option>
+                  <option value={12}>Monthly</option>
+                  <option value={1} selected>
+                    Yearly
+                  </option>
+                </select>
+              </Flex>
             </div>
             <Flex
               width="100%"
@@ -191,7 +262,12 @@ const IndexPage = ({ data }) => {
         )}
         {state?.steps?.[2] && (
           <Flex width="100%" column margin="0 auto">
-            <h1>{`Total Spending: $${state?.totalSpending}`}</h1>
+            <h2>{`Based on your spending of $${state?.totalSpending
+              .toString()
+              .replace(
+                /\B(?=(\d{3})+(?!\d))/g,
+                ","
+              )} a year, the following cards would give you the highest possible return on your credit card spending`}</h2>
             {state?.winners?.map((winner, i) => (
               <CardInfo winner={winner} place={i} />
             ))}
@@ -222,19 +298,19 @@ const IndexPage = ({ data }) => {
             <Flex>
               <form onSubmit={handleSubmit(reCalc)}>
                 <Flex column width="100%">
-                  {["amexMultiplier", "chaseMulitplier", "citiMultiplier"].map(
-                    (company) => (
-                      <Flex width="100%" margin="0 0 16px 0" key={company}>
-                        <label htmlFor={company}>{startCase(company)}: </label>
-                        <input
-                          type="number"
-                          name={company}
-                          ref={register()}
-                          step="0.1"
-                        />
-                      </Flex>
-                    )
-                  )}
+                  {["amex", "chase", "citi"].map((company) => (
+                    <Flex width="100%" margin="0 0 16px 0" key={company}>
+                      <label htmlFor={company}>
+                        {startCase(company)} Membership Reward Value:{" "}
+                      </label>
+                      <input
+                        type="number"
+                        name={company}
+                        ref={register()}
+                        step="0.1"
+                      />
+                    </Flex>
+                  ))}
                   <button type="submit">Re-calculate</button>
                 </Flex>
               </form>
@@ -254,8 +330,13 @@ export const query = graphql`
       edges {
         node {
           cardName
+          childContentfulCreditCardDescriptionTextNode {
+            description
+          }
+          cashBack
+          multiplier
+          currentSignUpPromotion
           annualFee
-          credits
           shopping
           foodDrink
           other
@@ -268,7 +349,9 @@ export const query = graphql`
           rentalCar
           otherTravel
           drugstores
-          currentSignUpPromotion
+          credits
+          creditsTest
+          creditsDifficulty
         }
       }
     }
