@@ -6,7 +6,7 @@ import CC from "images/credit-card-placeholder.jpeg";
 
 const CardInfo = ({ winner, place }) => {
   // console.log(place);
-  console.log(winner);
+  // console.log(winner);
   return (
     <S.Wrapper place={place}>
       <Flex column>
