@@ -4,11 +4,11 @@ import { Flex } from "components";
 import * as S from "./CardInfo.styled";
 import CC from "images/credit-card-placeholder.jpeg";
 
-const CardInfo = ({ winner, place }) => {
+const CardInfo = ({ winner, place, myCard }) => {
   // console.log(place);
   // console.log(winner);
   return (
-    <S.Wrapper place={place}>
+    <S.Wrapper place={place} myCard={myCard}>
       <Flex column>
         <img src={CC} alt="Credit Card" />
         <button style={{ width: "100%", margin: "16px 0" }}>Apply Now</button>

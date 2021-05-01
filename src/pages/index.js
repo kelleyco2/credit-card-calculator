@@ -26,9 +26,6 @@ export default function index() {
     <Layout>
       <Hero>
         <Flex>
-          <Button to="/formula" state={{ oneCard: true }}>
-            My Card
-          </Button>
           <Button to="/formula" state={{ selectCards: true }}>
             Compare My Cards
           </Button>

@@ -7,7 +7,7 @@ export const useGlobalState = () => useContext(GlobalStateContext);
 export const useGlobalDispatch = () => useContext(GlobalDispatchContext);
 
 const isSSR = typeof window === "undefined";
-//TODO: Add session storage
+
 const existingSteps = JSON.parse(!isSSR && sessionStorage.getItem("steps"));
 const existingWinners = JSON.parse(!isSSR && sessionStorage.getItem("winners"));
 const existingCategories = JSON.parse(
@@ -18,6 +18,12 @@ const existingCategoryValues = JSON.parse(
 );
 const existingTotalSpending = JSON.parse(
   !isSSR && sessionStorage.getItem("totalSpending")
+);
+const existingSelectedCards = JSON.parse(
+  !isSSR && sessionStorage.getItem("selectedCards")
+);
+const existingSelectedCardsTotals = JSON.parse(
+  !isSSR && sessionStorage.getItem("selectedCardsTotals")
 );
 
 const initialState = {
@@ -52,10 +58,34 @@ const initialState = {
     drugstores: 0,
   },
   totalSpending: existingTotalSpending || 0,
+  selectedCards: existingSelectedCards || [],
+  selectedCardsTotals: existingSelectedCardsTotals || [],
 };
 
 const reducer = (state, action) => {
   switch (action.type) {
+    case "SET_SELECTED_CARDS_TOTALS": {
+      !isSSR &&
+        sessionStorage.setItem(
+          "selectedCardsTotals",
+          JSON.stringify(action?.payload)
+        );
+      return {
+        ...state,
+        selectedCardsTotals: action?.payload,
+      };
+    }
+    case "SET_SELECTED_CARDS": {
+      !isSSR &&
+        sessionStorage.setItem(
+          "selectedCards",
+          JSON.stringify(action?.payload)
+        );
+      return {
+        ...state,
+        selectedCards: action?.payload,
+      };
+    }
     case "SET_CATEGORIES": {
       !isSSR &&
         sessionStorage.setItem("categories", JSON.stringify(action?.payload));
@@ -135,6 +165,9 @@ const reducer = (state, action) => {
           otherTravel: 0,
           drugstores: 0,
         },
+        totalSpending: 0,
+        selectedCards: [],
+        selectedCardsTotals: [],
       };
     }
     default:

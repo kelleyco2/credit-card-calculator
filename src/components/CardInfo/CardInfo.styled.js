@@ -6,8 +6,14 @@ export const Wrapper = styled.div`
   padding: 20px 30px;
   box-shadow: 0 0 8px 0 rgb(0 0 0 / 25%);
   border: 3px solid
-    ${({ place }) =>
-      place === 0 ? "Gold" : place === 1 ? "Silver" : "Chocolate"};
+    ${({ place, myCard }) =>
+      myCard
+        ? "black"
+        : place === 0
+        ? "Gold"
+        : place === 1
+        ? "Silver"
+        : "Chocolate"};
   border-radius: 8px;
   width: 75%;
   margin: 16px auto;

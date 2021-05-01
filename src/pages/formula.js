@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from "react";
 
-import { graphql } from "gatsby";
+import { graphql, navigate } from "gatsby";
 import startCase from "lodash.startcase";
 import { useForm, Controller } from "react-hook-form";
 
@@ -24,9 +24,13 @@ const Formula = ({ data, location }) => {
   // console.log("EDGES: ", edges);
 
   const formula = useCallback(
-    (spendingCategories, combo, multipliers, selectedCards) => {
+    (
+      spendingCategories = {},
+      combo = false,
+      multipliers = {},
+      selectedCards = []
+    ) => {
       // console.log("customMultiplier", multipliers);
-      console.log("selectedCards", selectedCards);
       let finalArray;
       const edgesCopy = [...edges];
       const filteredEdges = edgesCopy.filter(
@@ -88,7 +92,18 @@ const Formula = ({ data, location }) => {
       });
 
       newTotals.sort((a, b) => b?.value - a?.value);
-      // const selectedTotals = newTotals.filter(() => )
+      // console.log("selectedCards in formula", selectedCards);
+      const selectedCardsTotals = newTotals.filter((total) =>
+        selectedCards?.includes(total?.cardName)
+      );
+      dispatch({
+        type: "SET_SELECTED_CARDS_TOTALS",
+        payload: selectedCardsTotals,
+      });
+      // const selectedTotals = newTotals.filter((total) =>
+      //   selectedCards?.map((card) => card === total?.name)
+      // );
+      // console.log("selectedCardsTotals", selectedCardsTotals);
       const topThree = newTotals.slice(0, 3);
 
       dispatch({
@@ -101,110 +116,108 @@ const Formula = ({ data, location }) => {
 
   // console.log(state?.winners);
 
-  const [selectedCards, setSelectedCards] = useState([]);
-
   const selectCards = (e) => {
-    if (location?.state?.oneCard) {
-      setSelectedCards(e.target.value);
+    const selectedCardCopy = [...state?.selectedCards];
+    if (e.target.checked) {
+      selectedCardCopy.push(e.target.value);
     } else {
-      const selectedCardCopy = [...selectedCards];
-      if (e.target.checked) {
-        selectedCardCopy.push(e.target.value);
-      } else {
-        const index = selectedCardCopy.indexOf(e.target.value);
-        index > -1 && selectedCardCopy.splice(index, 1);
-      }
-      setSelectedCards(selectedCardCopy);
+      const index = selectedCardCopy.indexOf(e.target.value);
+      index > -1 && selectedCardCopy.splice(index, 1);
     }
+    dispatch({
+      type: "SET_SELECTED_CARDS",
+      payload: selectedCardCopy,
+    });
   };
 
-  const submit = useCallback(
-    ({
-      drugstores = 0,
-      drugstores_time = 1,
-      entertainment = 0,
-      entertainment_time = 1,
-      flights = 0,
-      flights_time = 1,
-      foodDrink = 0,
-      foodDrink_time = 1,
-      gas = 0,
-      gas_time = 1,
-      groceries = 0,
-      groceries_time = 1,
-      hotels = 0,
-      hotels_time = 1,
-      other = 0,
-      other_time = 1,
-      otherTravel = 0,
-      otherTravel_time = 1,
-      rentalCar = 0,
-      rentalCar_time = 1,
-      shopping = 0,
-      shopping_time = 1,
-      transit = 0,
-      transit_time = 1,
-    }) => {
-      const newCategories = {
-        drugstores: parseInt(drugstores) * parseInt(drugstores_time),
-        entertainment: parseInt(entertainment) * parseInt(entertainment_time),
-        flights: parseInt(flights) * parseInt(flights_time),
-        foodDrink: parseInt(foodDrink) * parseInt(foodDrink_time),
-        gas: parseInt(gas) * parseInt(gas_time),
-        groceries: parseInt(groceries) * parseInt(groceries_time),
-        hotels: parseInt(hotels) * parseInt(hotels_time),
-        other: parseInt(other) * parseInt(other_time),
-        otherTravel: parseInt(otherTravel) * parseInt(otherTravel_time),
-        rentalCar: parseInt(rentalCar) * parseInt(rentalCar_time),
-        shopping: parseInt(shopping) * parseInt(shopping_time),
-        transit: parseInt(transit) * parseInt(transit_time),
-      };
-      // console.log("newCategories", newCategories);
-      formula(newCategories, false, null, selectedCards);
-      const totalSpending = Object.keys(newCategories).reduce(
-        (sum, key) => sum + parseFloat(newCategories[key] || 0),
-        0
-      );
-      dispatch({
-        type: "SET_TOTAL_SPENDING",
-        payload: totalSpending,
-      });
-      dispatch({
-        type: "SET_CATEGORY_VALUES",
-        payload: newCategories,
-      });
-      dispatch({
-        type: "SET_STEPS",
-        payload: [false, false, true],
-      });
-    },
-    [dispatch, formula]
-  );
-
+  const submit = ({
+    drugstores = 0,
+    drugstores_time = 1,
+    entertainment = 0,
+    entertainment_time = 1,
+    flights = 0,
+    flights_time = 1,
+    foodDrink = 0,
+    foodDrink_time = 1,
+    gas = 0,
+    gas_time = 1,
+    groceries = 0,
+    groceries_time = 1,
+    hotels = 0,
+    hotels_time = 1,
+    other = 0,
+    other_time = 1,
+    otherTravel = 0,
+    otherTravel_time = 1,
+    rentalCar = 0,
+    rentalCar_time = 1,
+    shopping = 0,
+    shopping_time = 1,
+    transit = 0,
+    transit_time = 1,
+  }) => {
+    const newCategories = {
+      drugstores: parseInt(drugstores) * parseInt(drugstores_time),
+      entertainment: parseInt(entertainment) * parseInt(entertainment_time),
+      flights: parseInt(flights) * parseInt(flights_time),
+      foodDrink: parseInt(foodDrink) * parseInt(foodDrink_time),
+      gas: parseInt(gas) * parseInt(gas_time),
+      groceries: parseInt(groceries) * parseInt(groceries_time),
+      hotels: parseInt(hotels) * parseInt(hotels_time),
+      other: parseInt(other) * parseInt(other_time),
+      otherTravel: parseInt(otherTravel) * parseInt(otherTravel_time),
+      rentalCar: parseInt(rentalCar) * parseInt(rentalCar_time),
+      shopping: parseInt(shopping) * parseInt(shopping_time),
+      transit: parseInt(transit) * parseInt(transit_time),
+    };
+    const newSelectedCards = [...state?.selectedCards];
+    // console.log("newSelectedCards", newSelectedCards);
+    // console.log("newCategories", newCategories);
+    formula(newCategories, false, null, newSelectedCards);
+    const totalSpending = Object.keys(newCategories).reduce(
+      (sum, key) => sum + parseFloat(newCategories[key] || 0),
+      0
+    );
+    dispatch({
+      type: "SET_TOTAL_SPENDING",
+      payload: totalSpending,
+    });
+    dispatch({
+      type: "SET_CATEGORY_VALUES",
+      payload: newCategories,
+    });
+    dispatch({
+      type: "SET_STEPS",
+      payload: [false, false, true],
+    });
+  };
   const reCalc = (multipliers) => {
     // console.log(multipliers);
-    formula(state?.categoryValues, false, multipliers);
+    formula(state?.categoryValues, false, multipliers, state?.selectedCards);
   };
-
-  // console.log("selectedCards", selectedCards);
 
   return (
     <Layout>
       <main>
         {state?.steps?.[0] && (
           <>
-            {(location?.state?.oneCard || location?.state?.selectCards) &&
-              edges?.map(({ node: { cardName } }) => (
-                <Flex key={cardName} maxWidth="700px" margin="0 auto 8px">
-                  <div>{cardName}</div>
-                  <input
-                    type={location?.state?.oneCard ? "radio" : "checkbox"}
-                    name={location?.state?.oneCard ? "cards" : cardName}
-                    value={cardName}
-                    onChange={selectCards}
-                  />
-                </Flex>
-              ))}
+            {location?.state?.selectCards &&
+              edges
+                ?.filter(({ node: { cardName } }) => !cardName.includes("+"))
+                .map(({ node: { cardName } }) => (
+                  <Flex key={cardName} maxWidth="700px" margin="0 auto 8px">
+                    <div>{cardName}</div>
+                    <input
+                      type={"checkbox"}
+                      name={cardName}
+                      value={cardName}
+                      onChange={selectCards}
+                      checked={
+                        state?.selectedCards?.includes(cardName) || false
+                      }
+                    />
+                  </Flex>
+                ))}
             <Categories />
           </>
         )}
@@ -251,7 +264,9 @@ const Formula = ({ data, location }) => {
                         <select name={`${category}_time`} ref={register()}>
                           <option value={52}>Weekly</option>
                           <option value={12}>Monthly</option>
-                          <option value={1}>Yearly</option>
+                          <option value={1} selected>
+                            Yearly
+                          </option>
                         </select>
                       </Flex>
                     )
@@ -295,6 +310,11 @@ const Formula = ({ data, location }) => {
         )}
         {state?.steps?.[2] && (
           <Flex width="100%" column margin="0 auto">
+            {state?.selectedCardsTotals &&
+              state?.selectedCardsTotals.length > 0 && <h2>My Card Results</h2>}
+            {state?.selectedCardsTotals?.map((winner, i) => (
+              <CardInfo myCard winner={winner} place={i} />
+            ))}
             <h2>{`Based on your spending of $${state?.totalSpending
               .toString()
               .replace(
@@ -318,13 +338,36 @@ const Formula = ({ data, location }) => {
               >
                 Previous
               </button>
-              <button onClick={() => formula(state?.categoryValues, false)}>
+              <button
+                onClick={() =>
+                  formula(
+                    state?.categoryValues,
+                    false,
+                    null,
+                    state?.selectedCards
+                  )
+                }
+              >
                 Show Single Card
               </button>
-              <button onClick={() => formula(state?.categoryValues, true)}>
+              <button
+                onClick={() =>
+                  formula(
+                    state?.categoryValues,
+                    true,
+                    null,
+                    state?.selectedCards
+                  )
+                }
+              >
                 Show Multiple Cards
               </button>
-              <button onClick={() => dispatch({ type: "RESET" })}>
+              <button
+                onClick={() => {
+                  dispatch({ type: "RESET" });
+                  navigate("/");
+                }}
+              >
                 Start Over
               </button>
             </Flex>
