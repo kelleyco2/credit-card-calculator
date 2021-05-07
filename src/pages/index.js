@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useEffect } from "react";
 import styled from "styled-components";
 import { Link } from "gatsby";
 
 import { Layout, Flex } from "components";
+import { useGlobalDispatch } from "context/GlobalContextProvider";
 
 const Hero = styled.div`
   display: flex;
@@ -21,13 +22,17 @@ const Button = styled(Link)`
   margin-right: 16px;
 `;
 
-export default function index() {
+const Index = () => {
+  const dispatch = useGlobalDispatch();
+  useEffect(() => {
+    dispatch({ type: "RESET" });
+  }, [dispatch]);
   return (
     <Layout>
       <Hero>
         <Flex>
           <Button to="/formula" state={{ selectCards: true }}>
-            Compare My Cards
+            Compare Multiple Cards
           </Button>
           <Button to="/formula" state={{ allCards: true }}>
             All Cards
@@ -36,4 +41,6 @@ export default function index() {
       </Hero>
     </Layout>
   );
-}
+};
+
+export default Index;

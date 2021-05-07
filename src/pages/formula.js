@@ -311,7 +311,9 @@ const Formula = ({ data, location }) => {
         {state?.steps?.[2] && (
           <Flex width="100%" column margin="0 auto">
             {state?.selectedCardsTotals &&
-              state?.selectedCardsTotals.length > 0 && <h2>My Card Results</h2>}
+              state?.selectedCardsTotals.length > 0 && (
+                <h2>Selected Card Results</h2>
+              )}
             {state?.selectedCardsTotals?.map((winner, i) => (
               <CardInfo myCard winner={winner} place={i} />
             ))}
