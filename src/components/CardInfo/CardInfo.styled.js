@@ -4,6 +4,7 @@ export const Wrapper = styled.div`
   position: relative;
   display: flex;
   justify-content: space-between;
+  align-items: center;
   padding: 20px 30px;
   box-shadow: 0 0 8px 0 rgb(0 0 0 / 25%);
   border: 3px solid
@@ -19,14 +20,19 @@ export const Wrapper = styled.div`
   width: 75%;
   margin: 16px auto;
 
-  div {
-    font-size: 24px;
-  }
-
   h1,
   h2,
   p {
     margin: 0;
+  }
+
+  img {
+    width: 80%;
+    height: auto;
+  }
+
+  p {
+    font-size: 16px;
   }
 
   meter[value="1"]::-webkit-meter-optimum-value {
@@ -48,6 +54,7 @@ export const Wrapper = styled.div`
 
 export const Multiplier = styled.div`
   position: absolute;
-  top: 8px;
+  bottom: 8px;
   right: 8px;
+  font-size: 16px;
 `;

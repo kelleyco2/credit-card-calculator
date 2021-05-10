@@ -18,18 +18,20 @@ const CardInfo = ({ winner, place, myCard, multiplier }) => {
           ? multiplier?.chase
           : winner?.cardName.includes("Citi") && multiplier?.citi}
       </S.Multiplier>
-      <Flex column>
+      <Flex column width="30%">
         <img src={CC} alt="Credit Card" />
         <button style={{ width: "100%", margin: "16px 0" }}>Apply Now</button>
         <button style={{ width: "100%" }}>View Details</button>
       </Flex>
       <Flex column align="flex-start" justify="flex-start">
-        <h2 style={{ marginBottom: "24px" }}>{winner?.cardName}</h2>
-        <div style={{ marginBottom: "24px" }}>
+        <h2 style={{ marginBottom: "24px", fontSize: "28px" }}>
+          {winner?.cardName}
+        </h2>
+        <div style={{ marginBottom: "24px", fontSize: "20px" }}>
           Annual Fee: ${winner?.annualFee || 0}
         </div>
 
-        <div>
+        <div style={{ fontSize: "20px" }}>
           Current Signup Promotion: {winner?.currentSignUpPromotion || "N/A"}
         </div>
 

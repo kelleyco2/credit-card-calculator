@@ -326,7 +326,7 @@ const Formula = ({ data, location }) => {
           </Flex>
 
           {state?.winners?.length > 0 && (
-            <Flex width="50%" column>
+            <Flex width="70%" column>
               {state?.selectedCardsTotals &&
                 state?.selectedCardsTotals.length > 0 && (
                   <>
