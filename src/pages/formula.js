@@ -23,6 +23,14 @@ const Formula = ({ data, location }) => {
 
   // console.log("EDGES: ", edges);
 
+  const [multiplier, setMultiplier] = useState({
+    amex: 1,
+    citi: 1,
+    chase: 1.5, // Ask about what to do here. Multiple chase cards have a different multiplier
+  });
+
+  console.log("multiplier", multiplier);
+
   const formula = useCallback(
     (
       spendingCategories = {},
@@ -45,6 +53,7 @@ const Formula = ({ data, location }) => {
       let totals = [];
       let multiplier = 0;
       finalArray.map(({ node }, i) => {
+        // console.log(node?.cardName, node?.multiplier);
         // console.log(`${node?.cardName}: ${i}`);
         if (multipliers) {
           if (node?.cardName.includes("Amex") && node?.cashBack === false) {
@@ -193,208 +202,241 @@ const Formula = ({ data, location }) => {
   };
   const reCalc = (multipliers) => {
     // console.log(multipliers);
+    setMultiplier({
+      amex: parseInt(multipliers?.amex),
+      chase: parseInt(multipliers?.chase),
+      citi: parseInt(multipliers?.citi),
+    });
     formula(state?.categoryValues, false, multipliers, state?.selectedCards);
   };
 
   return (
     <Layout>
       <main>
-        {state?.steps?.[0] && (
-          <>
-            {location?.state?.selectCards &&
-              edges
-                ?.filter(({ node: { cardName } }) => !cardName.includes("+"))
-                .map(({ node: { cardName } }) => (
-                  <Flex key={cardName} maxWidth="700px" margin="0 auto 8px">
-                    <div>{cardName}</div>
-                    <input
-                      type={"checkbox"}
-                      name={cardName}
-                      value={cardName}
-                      onChange={selectCards}
-                      checked={
-                        state?.selectedCards?.includes(cardName) || false
-                      }
-                    />
-                  </Flex>
-                ))}
-            <Categories />
-          </>
-        )}
-        {state?.steps?.[1] && (
-          <form onSubmit={handleSubmit(submit)}>
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                maxWidth: "700px",
-                width: "100%",
-                margin: "0 auto",
-              }}
-            >
-              {Object.keys(state?.categories)
-                .filter((key) => state?.categories?.[key] === true)
-                .map(
-                  (category) =>
-                    category !== "other" && (
-                      <Flex justify="flex-start" margin="16px 0 0 0">
-                        <React.Fragment key={category}>
-                          <label
-                            htmlFor={category}
-                            style={{
-                              marginRight: "16px",
-                              whiteSpace: "nowrap",
-                            }}
-                          >
-                            {startCase(category)}
-                          </label>
-                          <Controller
-                            name={category}
-                            control={control}
-                            defaultValue={state?.categoryValues?.[category]}
-                            render={({ onChange, value }) => (
-                              <input
-                                value={value}
-                                onChange={(e) => onChange(e.target.value)}
-                                style={{ marginRight: "16px", width: "100%" }}
-                              />
-                            )}
-                          />
-                        </React.Fragment>
-                        <select name={`${category}_time`} ref={register()}>
-                          <option value={52}>Weekly</option>
-                          <option value={12}>Monthly</option>
-                          <option value={1} selected>
-                            Yearly
-                          </option>
-                        </select>
-                      </Flex>
-                    )
-                )}
-              <Flex justify="flex-start" margin="16px 0 0 0">
-                <>
-                  <label htmlFor={"other"} style={{ marginRight: "16px" }}>
-                    {startCase("other")}
-                  </label>
-                  <Controller
-                    name={"other_time"}
-                    control={control}
-                    defaultValue={state?.categoryValues?.["other"]}
-                    render={({ onChange, value }) => (
+        <Flex align="flex-start">
+          <Flex column width="50%">
+            <div style={{ marginTop: "20px", width: "75%" }}>
+              {location?.state?.selectCards &&
+                edges
+                  ?.filter(({ node: { cardName } }) => !cardName.includes("+"))
+                  .map(({ node: { cardName } }) => (
+                    <Flex key={cardName} width="100%" margin="0 auto 8px">
+                      <div>{cardName}</div>
                       <input
-                        value={value}
-                        onChange={(e) => onChange(e.target.value)}
-                        style={{ marginRight: "16px", width: "100%" }}
-                      />
-                    )}
-                  />
-                </>
-                <select name={"other"} ref={register()}>
-                  <option value={52}>Weekly</option>
-                  <option value={12}>Monthly</option>
-                  <option value={1} selected>
-                    Yearly
-                  </option>
-                </select>
-              </Flex>
-            </div>
-            <Flex
-              width="100%"
-              maxWidth="700px"
-              justify="flex-end"
-              margin="16px auto 0"
-            >
-              <button type="submit">Show Results</button>
-            </Flex>
-          </form>
-        )}
-        {state?.steps?.[2] && (
-          <Flex width="100%" column margin="0 auto">
-            {state?.selectedCardsTotals &&
-              state?.selectedCardsTotals.length > 0 && (
-                <h2>Selected Card Results</h2>
-              )}
-            {state?.selectedCardsTotals?.map((winner, i) => (
-              <CardInfo myCard winner={winner} place={i} />
-            ))}
-            <h2>{`Based on your spending of $${state?.totalSpending
-              .toString()
-              .replace(
-                /\B(?=(\d{3})+(?!\d))/g,
-                ","
-              )} a year, the following cards would give you the highest possible return on your credit card spending`}</h2>
-            {state?.winners?.map((winner, i) => (
-              <CardInfo winner={winner} place={i} />
-            ))}
-            <Flex
-              justify="space-between"
-              width="100%"
-              maxWidth="700px"
-              margin="0 0 20px 0"
-              wrap={"true"}
-            >
-              <button
-                onClick={() =>
-                  dispatch({ type: "SET_STEPS", payload: [true, true, false] })
-                }
-              >
-                Previous
-              </button>
-              <button
-                onClick={() =>
-                  formula(
-                    state?.categoryValues,
-                    false,
-                    null,
-                    state?.selectedCards
-                  )
-                }
-              >
-                Show Single Card
-              </button>
-              <button
-                onClick={() =>
-                  formula(
-                    state?.categoryValues,
-                    true,
-                    null,
-                    state?.selectedCards
-                  )
-                }
-              >
-                Show Multiple Cards
-              </button>
-              <button
-                onClick={() => {
-                  dispatch({ type: "RESET" });
-                  navigate("/");
-                }}
-              >
-                Start Over
-              </button>
-            </Flex>
-            <Flex>
-              <form onSubmit={handleSubmit(reCalc)}>
-                <Flex column width="100%">
-                  {["amex", "chase", "citi"].map((company) => (
-                    <Flex width="100%" margin="0 0 16px 0" key={company}>
-                      <label htmlFor={company}>
-                        {startCase(company)} Membership Reward Value:{" "}
-                      </label>
-                      <input
-                        type="number"
-                        name={company}
-                        ref={register()}
-                        step="0.1"
+                        type={"checkbox"}
+                        name={cardName}
+                        value={cardName}
+                        onChange={selectCards}
+                        checked={
+                          state?.selectedCards?.includes(cardName) || false
+                        }
                       />
                     </Flex>
                   ))}
-                  <button type="submit">Re-calculate</button>
+            </div>
+            <Categories />
+
+            <form onSubmit={handleSubmit(submit)} style={{ width: "75%" }}>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  width: "100%",
+                  margin: "0 auto",
+                }}
+              >
+                {Object.keys(state?.categories)
+                  .filter((key) => state?.categories?.[key] === true)
+                  .map(
+                    (category) =>
+                      category !== "other" && (
+                        <Flex justify="flex-start" margin="16px 0 0 0">
+                          <React.Fragment key={category}>
+                            {console.log("category", category)}
+                            <label
+                              htmlFor={category}
+                              style={{
+                                marginRight: "16px",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              {category === "foodDrink"
+                                ? "Food & Drink"
+                                : startCase(category)}
+                            </label>
+                            <Controller
+                              name={category}
+                              control={control}
+                              defaultValue={state?.categoryValues?.[category]}
+                              render={({ onChange, value }) => (
+                                <input
+                                  value={value}
+                                  onChange={(e) => onChange(e.target.value)}
+                                  style={{ marginRight: "16px", width: "100%" }}
+                                />
+                              )}
+                            />
+                          </React.Fragment>
+                          <select name={`${category}_time`} ref={register()}>
+                            <option value={52}>Weekly</option>
+                            <option value={12}>Monthly</option>
+                            <option value={1} selected>
+                              Yearly
+                            </option>
+                          </select>
+                        </Flex>
+                      )
+                  )}
+                <Flex justify="flex-start" margin="16px 0 0 0">
+                  <>
+                    <label htmlFor={"other"} style={{ marginRight: "16px" }}>
+                      {startCase("other")}
+                    </label>
+                    <Controller
+                      name={"other_time"}
+                      control={control}
+                      defaultValue={state?.categoryValues?.["other"]}
+                      render={({ onChange, value }) => (
+                        <input
+                          value={value}
+                          onChange={(e) => onChange(e.target.value)}
+                          style={{ marginRight: "16px", width: "100%" }}
+                        />
+                      )}
+                    />
+                  </>
+                  <select name={"other"} ref={register()}>
+                    <option value={52}>Weekly</option>
+                    <option value={12}>Monthly</option>
+                    <option value={1} selected>
+                      Yearly
+                    </option>
+                  </select>
                 </Flex>
-              </form>
-            </Flex>
+              </div>
+              <Flex
+                width="100%"
+                maxWidth="700px"
+                justify="flex-end"
+                margin="16px auto 0"
+              >
+                <button type="submit">Show Results</button>
+              </Flex>
+            </form>
           </Flex>
-        )}
+
+          {state?.winners?.length > 0 && (
+            <Flex width="50%" column>
+              {state?.selectedCardsTotals &&
+                state?.selectedCardsTotals.length > 0 && (
+                  <>
+                    <h2>Selected Card Results</h2>
+                    <h2>{`Based on your spending of $${state?.totalSpending
+                      .toString()
+                      .replace(
+                        /\B(?=(\d{3})+(?!\d))/g,
+                        ","
+                      )} a year, below is the estimated annual return for the cards you selected`}</h2>
+                  </>
+                )}
+              {state?.selectedCardsTotals?.map((winner, i) => (
+                <CardInfo
+                  myCard
+                  winner={winner}
+                  place={i}
+                  multiplier={multiplier}
+                />
+              ))}
+              {state?.selectedCardsTotals &&
+                state?.selectedCardsTotals.length > 0 && <hr />}
+              {state?.selectedCardsTotals &&
+              state?.selectedCardsTotals.length > 0 ? (
+                <h2>Other cards to consider that were not selected:</h2>
+              ) : (
+                <h2>{`Based on your spending of $${state?.totalSpending
+                  .toString()
+                  .replace(
+                    /\B(?=(\d{3})+(?!\d))/g,
+                    ","
+                  )} a year, the following cards would give you the highest possible return on your credit card spending`}</h2>
+              )}
+              {state?.winners?.map((winner, i) => (
+                <CardInfo winner={winner} place={i} multiplier={multiplier} />
+              ))}
+              <Flex
+                justify="space-between"
+                width="100%"
+                maxWidth="700px"
+                margin="0 0 20px 0"
+                wrap={"true"}
+              >
+                <button
+                  onClick={() =>
+                    dispatch({
+                      type: "SET_STEPS",
+                      payload: [true, true, false],
+                    })
+                  }
+                >
+                  Previous
+                </button>
+                <button
+                  onClick={() =>
+                    formula(
+                      state?.categoryValues,
+                      false,
+                      null,
+                      state?.selectedCards
+                    )
+                  }
+                >
+                  Show Only Single Card Combinations
+                </button>
+                <button
+                  onClick={() =>
+                    formula(
+                      state?.categoryValues,
+                      true,
+                      null,
+                      state?.selectedCards
+                    )
+                  }
+                >
+                  Show Multiple Card Combinations
+                </button>
+                <button
+                  onClick={() => {
+                    dispatch({ type: "RESET" });
+                    navigate("/");
+                  }}
+                >
+                  Start Over
+                </button>
+              </Flex>
+              <Flex>
+                <form onSubmit={handleSubmit(reCalc)}>
+                  <Flex column width="100%">
+                    {["amex", "chase", "citi"].map((company) => (
+                      <Flex width="100%" margin="0 0 16px 0" key={company}>
+                        <label htmlFor={company}>
+                          {startCase(company)} Membership Reward Value:{" "}
+                        </label>
+                        <input
+                          type="number"
+                          name={company}
+                          ref={register()}
+                          step="0.1"
+                          placeholder={multiplier[company]}
+                        />
+                      </Flex>
+                    ))}
+                    <button type="submit">Re-calculate</button>
+                  </Flex>
+                </form>
+              </Flex>
+            </Flex>
+          )}
+        </Flex>
       </main>
     </Layout>
   );

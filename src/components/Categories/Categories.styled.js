@@ -1,8 +1,7 @@
 import styled from "styled-components";
 
 export const Wrapper = styled.div`
-  max-width: 700px;
-  margin: 0 auto;
+  width: 75%;
   padding: 20px;
 
   p {

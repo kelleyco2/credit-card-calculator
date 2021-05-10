@@ -4,11 +4,20 @@ import { Flex } from "components";
 import * as S from "./CardInfo.styled";
 import CC from "images/credit-card-placeholder.jpeg";
 
-const CardInfo = ({ winner, place, myCard }) => {
+const CardInfo = ({ winner, place, myCard, multiplier }) => {
   // console.log(place);
   // console.log(winner);
+  console.log(multiplier);
   return (
     <S.Wrapper place={place} myCard={myCard}>
+      <S.Multiplier>
+        Multiplier:{" "}
+        {winner?.cardName?.includes("Amex")
+          ? multiplier?.amex
+          : winner?.cardName.includes("Chase")
+          ? multiplier?.chase
+          : winner?.cardName.includes("Citi") && multiplier?.citi}
+      </S.Multiplier>
       <Flex column>
         <img src={CC} alt="Credit Card" />
         <button style={{ width: "100%", margin: "16px 0" }}>Apply Now</button>
@@ -19,9 +28,11 @@ const CardInfo = ({ winner, place, myCard }) => {
         <div style={{ marginBottom: "24px" }}>
           Annual Fee: ${winner?.annualFee || 0}
         </div>
-        {winner?.currentSignUpPromotion && (
-          <div>Signup Promotion: {winner?.currentSignUpPromotion}</div>
-        )}
+
+        <div>
+          Current Signup Promotion: {winner?.currentSignUpPromotion || "N/A"}
+        </div>
+
         {winner?.creditsTest && (
           <Flex column align="flex-start" margin="16px 0 0 0">
             <h3 style={{ margin: "0" }}>Credits</h3>

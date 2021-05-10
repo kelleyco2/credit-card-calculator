@@ -10,7 +10,7 @@ const Hero = styled.div`
   justify-content: center;
   align-items: center;
   width: 100vw;
-  height: 50vh;
+  height: 20vh;
 `;
 
 const Button = styled(Link)`
@@ -30,13 +30,23 @@ const Index = () => {
   return (
     <Layout>
       <Hero>
-        <Flex>
-          <Button to="/formula" state={{ selectCards: true }}>
-            Compare Multiple Cards
-          </Button>
-          <Button to="/formula" state={{ allCards: true }}>
-            All Cards
-          </Button>
+        <Flex column maxWidth="1240px" height="20vh">
+          <h2 style={{ textAlign: "center" }}>
+            Weclome to WhatCard! We're here to help you fin the best credit
+            cards available based on your individual spending. To begin, choose
+            below for what you'd like to do.
+          </h2>
+          <Flex>
+            <Button to="/formula" state={{ selectCards: true }}>
+              Compare My Cards
+            </Button>
+            <Button to="/formula" state={{ selectCards: true }}>
+              Compare Multiple Cards
+            </Button>
+            <Button to="/formula" state={{ allCards: true }}>
+              Open New Card
+            </Button>
+          </Flex>
         </Flex>
       </Hero>
     </Layout>

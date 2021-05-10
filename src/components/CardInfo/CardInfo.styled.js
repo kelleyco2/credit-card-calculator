@@ -1,6 +1,7 @@
 import styled from "styled-components";
 
 export const Wrapper = styled.div`
+  position: relative;
   display: flex;
   justify-content: space-between;
   padding: 20px 30px;
@@ -43,4 +44,10 @@ export const Wrapper = styled.div`
   meter[value="5"]::-webkit-meter-optimum-value {
     background: red;
   }
+`;
+
+export const Multiplier = styled.div`
+  position: absolute;
+  top: 8px;
+  right: 8px;
 `;
