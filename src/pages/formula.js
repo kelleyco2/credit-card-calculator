@@ -245,7 +245,7 @@ const Formula = ({ data, location }) => {
                   margin: "0 auto",
                 }}
               >
-                {Object.keys(state?.categories)
+                {Object.keys(state?.categories || {})
                   .filter((key) => state?.categories?.[key] === true)
                   .map(
                     (category) =>
